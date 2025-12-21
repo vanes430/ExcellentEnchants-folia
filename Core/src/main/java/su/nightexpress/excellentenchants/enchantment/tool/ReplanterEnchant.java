@@ -139,21 +139,20 @@ public class ReplanterEnchant extends GameEnchantment implements InteractEnchant
         if (!(entity instanceof Player player)) return false;
         if (!this.isReplantOnPlantBreak()) return false;
 
-        Block blockPlant = event.getBlock();
+        Block block = event.getBlock();
+        BlockData data = block.getBlockData();
 
         // Check if broken block is supported crop(s).
-        if (!CROP_MAP.containsKey(blockPlant.getBlockData().getPlacementMaterial())) return false;
+        if (!CROP_MAP.containsKey(data.getPlacementMaterial())) return false;
 
         // Check if broken block is actually can grow.
-        BlockData dataPlant = blockPlant.getBlockData();
-        if (!(dataPlant instanceof Ageable plant)) return false;
+        if (!(data instanceof Ageable)) return false;
 
         // Replant the gathered crops with a new one.
-        if (this.takeSeeds(player, dataPlant.getPlacementMaterial())) {
-            plugin.runTask(task -> {
-                blockPlant.setType(plant.getMaterial());
-                plant.setAge(0);
-                blockPlant.setBlockData(plant);
+        Material material = block.getType();
+        if (this.takeSeeds(player, data.getPlacementMaterial())) {
+            plugin.runFoliaTask(() -> {
+                block.setType(material);
             });
         }
         return true;

@@ -3,6 +3,7 @@ package su.nightexpress.excellentenchants.enchantment.armor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import su.nightexpress.excellentenchants.EnchantsPlugin;
 import su.nightexpress.excellentenchants.api.EnchantData;
@@ -50,8 +51,8 @@ public class StoppingForceEnchant extends GameEnchantment implements DefendEncha
     public boolean onProtect(@NotNull EntityDamageByEntityEvent event, @NotNull LivingEntity damager, @NotNull LivingEntity victim, @NotNull ItemStack weapon, int level) {
         double reduction = 1D - Math.max(0, this.getKnockbackReduction(level));
 
-        this.plugin.runTask(task -> {
-            victim.setVelocity(victim.getVelocity().multiply(reduction));
+        this.plugin.runFoliaTask(() -> {
+            victim.setVelocity(new Vector(0, 0, 0));
         });
         return true;
     }

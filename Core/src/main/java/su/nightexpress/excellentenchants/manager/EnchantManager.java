@@ -233,7 +233,7 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
 
         explosion.handleExplosion(event);
 
-        this.plugin.runTask(task -> this.explosions.remove(entity.getUniqueId()));
+        this.plugin.runFoliaTask(() -> this.explosions.remove(entity.getUniqueId()));
     }
 
     public void handleEnchantExplosionDamage(@NotNull EntityDamageByEntityEvent event, @NotNull LivingEntity entity) {
