@@ -33,7 +33,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ExcellentEnchants-JAR
-        path: Core/target/ExcellentEnchants-*.jar
+        path: target/ExcellentEnchants-*.jar
 
     - name: Update Latest Release
       if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -43,4 +43,4 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: false
         title: "Latest Development Build"
-        files: Core/target/ExcellentEnchants-*.jar
+        files: target/ExcellentEnchants-*.jar
