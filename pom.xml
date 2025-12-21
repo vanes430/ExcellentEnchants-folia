@@ -57,13 +57,6 @@
             <version>23.0.0</version>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>su.nightexpress.nightcore</groupId>
-            <artifactId>main</artifactId>
-            <version>2.7.15</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
 </project>
