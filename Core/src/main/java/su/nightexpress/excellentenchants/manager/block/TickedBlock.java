@@ -69,4 +69,9 @@ public class TickedBlock {
     public int getSourceId() {
         return this.sourceId;
     }
+
+    @NotNull
+    public Location getLocation() {
+        return this.location;
+    }
 }

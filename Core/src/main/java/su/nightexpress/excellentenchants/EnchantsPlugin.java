@@ -1,5 +1,7 @@
 package su.nightexpress.excellentenchants;
 
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import su.nightexpress.excellentenchants.api.EnchantDefaults;
 import su.nightexpress.excellentenchants.api.EnchantRegistry;
@@ -45,6 +47,14 @@ public class EnchantsPlugin extends NightPlugin implements ImprovedCommands {
 
     public void runFoliaTask(@NotNull Runnable runnable) {
         this.getFoliaLib().getImpl().runNextTick(task -> runnable.run());
+    }
+
+    public void runTaskForEntity(@NotNull Entity entity, @NotNull Runnable runnable) {
+        this.getFoliaLib().getScheduler().runAtEntity(entity, task -> runnable.run());
+    }
+
+    public void runTaskAtLocation(@NotNull Location location, @NotNull Runnable runnable) {
+        this.getFoliaLib().getScheduler().runAtLocation(location, task -> runnable.run());
     }
 
     public void runFoliaTaskAsync(@NotNull Runnable runnable) {

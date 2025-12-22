@@ -51,8 +51,8 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
     public EnchantManager(@NotNull EnchantsPlugin plugin) {
         super(plugin);
         this.arrowEffects = new ConcurrentHashMap<>();
-        this.tickedBlocks = new HashMap<>();
-        this.explosions = new HashMap<>();
+        this.tickedBlocks = new ConcurrentHashMap<>();
+        this.explosions = new ConcurrentHashMap<>();
     }
 
     protected void onLoad() {
@@ -160,16 +160,25 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
     }
 
     private void tickArrowEffects() {
-        this.arrowEffects.keySet().removeIf(arrow -> !arrow.isValid() || arrow.isDead());
         this.arrowEffects.forEach((arrow, effects) -> {
-            effects.forEach(particle -> particle.play(arrow.getLocation(), 0f, 0f, 10));
+            this.plugin.runTaskForEntity(arrow, () -> {
+                if (!arrow.isValid() || arrow.isDead()) {
+                    this.arrowEffects.remove(arrow);
+                    return;
+                }
+                effects.forEach(particle -> particle.play(arrow.getLocation(), 0f, 0f, 10));
+            });
         });
     }
 
     private void tickBlocks() {
-        this.tickedBlocks.values().removeIf(tickedBlock -> {
-            tickedBlock.tick();
-            return tickedBlock.isDead();
+        this.tickedBlocks.values().forEach(tickedBlock -> {
+            this.plugin.runTaskAtLocation(tickedBlock.getLocation(), () -> {
+                tickedBlock.tick();
+                if (tickedBlock.isDead()) {
+                    this.tickedBlocks.remove(tickedBlock.getLocation());
+                }
+            });
         });
     }
 
@@ -179,7 +188,9 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
 
     private void tickPassiveEnchants() {
         this.getPassiveEnchantEntities().forEach(entity -> {
-            this.handleArmorEnchants(entity, EnchantRegistry.PASSIVE, (item, enchant, level) -> enchant.onTrigger(entity, item, level));
+            this.plugin.runTaskForEntity(entity, () -> {
+                this.handleArmorEnchants(entity, EnchantRegistry.PASSIVE, (item, enchant, level) -> enchant.onTrigger(entity, item, level));
+            });
         });
     }
 
