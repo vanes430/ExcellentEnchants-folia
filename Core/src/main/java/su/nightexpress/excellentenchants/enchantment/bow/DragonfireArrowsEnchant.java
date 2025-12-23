@@ -106,22 +106,26 @@ public class DragonfireArrowsEnchant extends GameEnchantment implements ArrowEnc
 
         ThrownPotion potion = shooter.launchProjectile(ThrownPotion.class);
         potion.setItem(itemStack);
-        potion.teleport(location);
+        potion.teleportAsync(location).thenAccept(success -> {
+            if (!success) {
+                potion.remove();
+                return;
+            }
+            AreaEffectCloud cloud = potion.getWorld().spawn(location, AreaEffectCloud.class);
+            cloud.clearCustomEffects();
+            cloud.setSource(shooter);
+            cloud.setParticle(Particle.DRAGON_BREATH);
+            cloud.setRadius((float) this.getFireRadius(level));
+            cloud.setDuration(this.getFireDuration(level));
+            cloud.setRadiusPerTick((7.0F - cloud.getRadius()) / (float) cloud.getDuration());
+            cloud.addCustomEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, 1, 1), true);
 
-        AreaEffectCloud cloud = potion.getWorld().spawn(location, AreaEffectCloud.class);
-        cloud.clearCustomEffects();
-        cloud.setSource(shooter);
-        cloud.setParticle(Particle.DRAGON_BREATH);
-        cloud.setRadius((float) this.getFireRadius(level));
-        cloud.setDuration(this.getFireDuration(level));
-        cloud.setRadiusPerTick((7.0F - cloud.getRadius()) / (float) cloud.getDuration());
-        cloud.addCustomEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, 1, 1), true);
-
-        LingeringPotionSplashEvent splashEvent = new LingeringPotionSplashEvent(potion, hitEntity, hitBlock, hitFace, cloud);
-        plugin.getPluginManager().callEvent(splashEvent);
-        if (splashEvent.isCancelled()) {
-            cloud.remove();
-        }
-        potion.remove();
+            LingeringPotionSplashEvent splashEvent = new LingeringPotionSplashEvent(potion, hitEntity, hitBlock, hitFace, cloud);
+            plugin.getPluginManager().callEvent(splashEvent);
+            if (splashEvent.isCancelled()) {
+                cloud.remove();
+            }
+            potion.remove();
+        });
     }
 }
