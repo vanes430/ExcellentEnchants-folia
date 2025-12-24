@@ -2,6 +2,7 @@ package su.nightexpress.excellentenchants.manager;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractArrow;
@@ -173,10 +174,21 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
 
     private void tickBlocks() {
         this.tickedBlocks.values().forEach(tickedBlock -> {
-            this.plugin.runTaskAtLocation(tickedBlock.getLocation(), () -> {
+            Location location = tickedBlock.getLocation();
+            World world = location.getWorld();
+            if (world == null) {
+                this.tickedBlocks.remove(location);
+                return;
+            }
+
+            if (!world.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+                return;
+            }
+
+            this.plugin.runTaskAtLocation(location, () -> {
                 tickedBlock.tick();
                 if (tickedBlock.isDead()) {
-                    this.tickedBlocks.remove(tickedBlock.getLocation());
+                    this.tickedBlocks.remove(location);
                 }
             });
         });
