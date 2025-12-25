@@ -287,16 +287,41 @@ public class EnchantUtils {
     public static <T extends CustomEnchantment> Map<ItemStack, Map<T, Integer>> getEquipped(@NotNull LivingEntity entity, @NotNull EnchantHolder<T> holder) {
         Map<ItemStack, Map<T, Integer>> map = new HashMap<>();
 
-        EntityUtil.getEquippedItems(entity).forEach((slot, itemStack) -> {
-            if (itemStack == null || !isEquipment(itemStack)) return;
+        EntityEquipment equipment = entity.getEquipment();
+        if (equipment == null) return map;
 
-            getCustomEnchantments(itemStack, holder).forEach((enchant, level) -> {
-                EquipmentSlot[] enchantSlots = enchant.getSupportedItems().getSlots();
-                if (!Lists.contains(enchantSlots, slot)) return;
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack itemStack;
+            try {
+                itemStack = equipment.getItem(slot);
+            }
+            catch (Throwable e) {
+                continue;
+            }
+            if (itemStack == null || !isEquipment(itemStack)) continue;
 
-                map.computeIfAbsent(itemStack, k -> new LinkedHashMap<>()).put(enchant, level);
-            });
-        });
+            ItemMeta meta = itemStack.getItemMeta();
+            if (meta == null) continue;
+
+            Map<Enchantment, Integer> enchants = getEnchantments(meta);
+            if (enchants.isEmpty()) continue;
+
+            Map<T, Integer> itemEnchants = null;
+
+            for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+                T customEnchant = holder.getEnchant(BukkitThing.getValue(entry.getKey()));
+                if (customEnchant == null) continue;
+
+                EquipmentSlot[] enchantSlots = customEnchant.getSupportedItems().getSlots();
+                if (!Lists.contains(enchantSlots, slot)) continue;
+
+                if (itemEnchants == null) {
+                    itemEnchants = new LinkedHashMap<>();
+                    map.put(itemStack, itemEnchants);
+                }
+                itemEnchants.put(customEnchant, entry.getValue());
+            }
+        }
         return map;
     }
 
