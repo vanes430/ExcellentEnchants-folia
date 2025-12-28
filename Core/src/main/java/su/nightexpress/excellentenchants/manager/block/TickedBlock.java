@@ -44,14 +44,19 @@ public class TickedBlock {
         this.livedTicks++;
 
         if (this.isDead()) {
-            Location location = LocationUtil.setCenter3D(this.location);
-            UniParticle.blockCrack(this.location.getBlock().getType()).play(location, 0.5, 0.7, 0.5, 0.03, 30);
-            this.sendDamageInfo(0F);
+            try {
+                Location location = LocationUtil.setCenter3D(this.location);
+                UniParticle.blockCrack(this.location.getBlock().getType()).play(location, 0.5, 0.7, 0.5, 0.03, 30);
+                this.sendDamageInfo(0F);
+            } catch (Exception ignored) {}
+
             this.restore();
             return;
         }
 
-        this.sendDamageInfo(this.getProgress());
+        try {
+            this.sendDamageInfo(this.getProgress());
+        } catch (Exception ignored) {}
     }
 
     public float getProgress() {

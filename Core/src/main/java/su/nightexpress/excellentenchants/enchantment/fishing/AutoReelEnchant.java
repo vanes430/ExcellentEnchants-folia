@@ -59,6 +59,8 @@ public class AutoReelEnchant extends GameEnchantment implements FishingEnchant {
                 LootTable table = Bukkit.getLootTable(LootTables.FISHING.getKey());
                 if (table != null) {
                     LootContext.Builder builder = new LootContext.Builder(hook.getLocation());
+                    builder.killer(player);
+                    builder.lootedEntity(hook);
                     Collection<ItemStack> drops = table.populateLoot(new Random(), builder.build());
 
                     for (ItemStack drop : drops) {
