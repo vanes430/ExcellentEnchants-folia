@@ -55,14 +55,17 @@ public class SurvivalistEnchant extends GameEnchantment implements FishingEnchan
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return false;
         if (!(event.getCaught() instanceof Item drop)) return false;
 
-        ItemStack stack = drop.getItemStack();
+        ItemStack rawStack = drop.getItemStack();
 
-        CookingRecipe<?> recipe = this.cookingRecipes.stream().filter(rec -> rec.getInputChoice().test(stack)).findFirst().orElse(null);
+        CookingRecipe<?> recipe = this.cookingRecipes.stream().filter(rec -> rec.getInputChoice().test(rawStack)).findFirst().orElse(null);
         if (recipe == null) return false;
 
-        ItemStack cooked = recipe.getResult();
-        cooked.setAmount(stack.getAmount());
-        drop.setItemStack(cooked);
+        ItemStack cooked = recipe.getResult().clone();
+        cooked.setAmount(1);
+
+        // Drop the cooked item as an extra bonus, leaving the original raw stack as is.
+        event.getHook().getWorld().dropItemNaturally(event.getHook().getLocation(), cooked);
+
         return false;
     }
 }
