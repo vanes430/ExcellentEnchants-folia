@@ -12,6 +12,7 @@ import org.bukkit.loot.LootContext;
 import org.bukkit.loot.LootTable;
 import org.bukkit.loot.LootTables;
 import org.bukkit.util.Vector;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import su.nightexpress.excellentenchants.EnchantsPlugin;
 import su.nightexpress.excellentenchants.api.EnchantData;
@@ -22,10 +23,11 @@ import su.nightexpress.excellentenchants.util.EnchantUtils;
 import su.nightexpress.nightcore.config.FileConfig;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Random;
 
 public class AutoReelEnchant extends GameEnchantment implements FishingEnchant {
+
+    private static final String META_AUTO_REEL = "excellentenchants_autoreel_active";
 
     public AutoReelEnchant(@NotNull EnchantsPlugin plugin, @NotNull File file, @NotNull EnchantData data) {
         super(plugin, file, data);
@@ -44,43 +46,59 @@ public class AutoReelEnchant extends GameEnchantment implements FishingEnchant {
 
     @Override
     public boolean onFishing(@NotNull PlayerFishEvent event, @NotNull ItemStack itemStack, int level) {
-        if (event.getState() != PlayerFishEvent.State.BITE) return false;
-
         Player player = event.getPlayer();
-        EquipmentSlot slot = EnchantUtils.getItemHand(player, Material.FISHING_ROD);
-        if (slot == null) return false;
-
         FishHook hook = event.getHook();
-        // Capture safe data from the player thread
-        Location playerLoc = player.getLocation();
-        
-        this.plugin.runTaskForEntity(hook, () -> {
-            if (hook.isValid()) {
-                LootTable table = Bukkit.getLootTable(LootTables.FISHING.getKey());
-                if (table != null) {
-                    LootContext.Builder builder = new LootContext.Builder(hook.getLocation());
-                    builder.killer(player);
-                    builder.lootedEntity(hook);
-                    Collection<ItemStack> drops = table.populateLoot(new Random(), builder.build());
+        PlayerFishEvent.State state = event.getState();
 
-                    for (ItemStack drop : drops) {
-                        org.bukkit.entity.Item itemEntity = hook.getWorld().dropItem(hook.getLocation(), drop);
-                        // Use captured playerLoc for vector calculation
-                        Vector vector = playerLoc.toVector().subtract(hook.getLocation().toVector());
-                        itemEntity.setVelocity(vector.normalize().multiply(0.5).add(new Vector(0, 0.2, 0)));
+        if (state == PlayerFishEvent.State.FISHING) {
+            player.setMetadata(META_AUTO_REEL, new FixedMetadataValue(this.plugin, true));
+            return false;
+        }
+
+        if (state == PlayerFishEvent.State.BITE) {
+            EquipmentSlot slot = EnchantUtils.getItemHand(player, Material.FISHING_ROD);
+            if (slot != null) {
+                this.plugin.runTaskForEntity(hook, () -> {
+                    if (hook.isValid() && player.isOnline()) {
+                        hook.retrieve(slot);
                     }
-                }
-                
-                // Schedule XP reward on the player's thread
-                this.plugin.runTaskForEntity(player, () -> {
-                   if (player.isValid()) {
-                       player.giveExp(1);
-                   }
                 });
-                
-                hook.remove();
+                return true;
             }
-        });
-        return true;
+        }
+
+        if (state == PlayerFishEvent.State.REEL_IN || state == PlayerFishEvent.State.IN_GROUND) {
+            player.removeMetadata(META_AUTO_REEL, this.plugin);
+            return false;
+        }
+
+        if (state == PlayerFishEvent.State.CAUGHT_FISH || state == PlayerFishEvent.State.CAUGHT_ENTITY
+            || state == PlayerFishEvent.State.REEL_IN || state == PlayerFishEvent.State.FAILED_ATTEMPT) {
+
+            if (!player.hasMetadata(META_AUTO_REEL)) return false;
+
+            this.plugin.runFoliaTaskLater(() -> {
+                this.plugin.runTaskForEntity(player, () -> {
+                    if (!player.isOnline()) return;
+
+                    EquipmentSlot slot = EnchantUtils.getItemHand(player, Material.FISHING_ROD);
+                    if (slot == null) return;
+
+                    ItemStack rod = player.getInventory().getItem(slot);
+                    if (rod == null || !EnchantUtils.contains(rod, this.getBukkitEnchantment())) return;
+
+                    if (player.getFishHook() != null) return;
+
+                    FishHook newHook = player.launchProjectile(FishHook.class);
+                    PlayerFishEvent castEvent = new PlayerFishEvent(player, null, newHook, PlayerFishEvent.State.FISHING);
+                    this.plugin.getServer().getPluginManager().callEvent(castEvent);
+                    if (castEvent.isCancelled()) {
+                        newHook.remove();
+                    }
+                });
+            }, 20 + new Random().nextInt(20));
+        }
+
+        return false;
     }
 }
