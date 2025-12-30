@@ -90,7 +90,7 @@ public class AutoReelEnchant extends GameEnchantment implements FishingEnchant {
                     if (player.getFishHook() != null) return;
 
                     FishHook newHook = player.launchProjectile(FishHook.class);
-                    PlayerFishEvent castEvent = new PlayerFishEvent(player, null, newHook, PlayerFishEvent.State.FISHING);
+                    PlayerFishEvent castEvent = new PlayerFishEvent(player, null, newHook, slot, PlayerFishEvent.State.FISHING);
                     this.plugin.getServer().getPluginManager().callEvent(castEvent);
                     if (castEvent.isCancelled()) {
                         newHook.remove();
