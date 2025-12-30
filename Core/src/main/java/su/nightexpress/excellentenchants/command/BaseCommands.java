@@ -39,7 +39,7 @@ public class BaseCommands {
             .withArgument(CommandArguments.levelArgument(CommandArguments.LEVEL))
             .withArgument(ArgumentTypes.player(CommandArguments.PLAYER))
             .withFlag(CommandFlags.charged())
-            .executes(BaseCommands::giveEnchantBook)
+            .executes((context, arguments) -> giveEnchantBook(plugin, context, arguments))
         );
 
         rootNode.addChildren(DirectNode.builder(plugin, "randombook")
@@ -48,7 +48,7 @@ public class BaseCommands {
             .withArgument(ArgumentTypes.player(CommandArguments.PLAYER))
             .withFlag(CommandFlags.custom())
             .withFlag(CommandFlags.charged())
-            .executes(BaseCommands::giveRandomBook)
+            .executes((context, arguments) -> giveRandomBook(plugin, context, arguments))
         );
 
         rootNode.addChildren(DirectNode.builder(plugin, "enchant")
