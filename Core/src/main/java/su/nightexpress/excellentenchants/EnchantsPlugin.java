@@ -69,6 +69,10 @@ public class EnchantsPlugin extends NightPlugin implements ImprovedCommands {
         this.getFoliaLib().getImpl().runTimer(task -> runnable.run(), delay * 50L, period * 50L, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
+    public void runTaskAtPlayer(@NotNull org.bukkit.entity.Player player, @NotNull Runnable runnable) {
+        this.getFoliaLib().getScheduler().runAtEntity(player, task -> runnable.run());
+    }
+
     @Override
     public void enable() {
         this.loadAPI();

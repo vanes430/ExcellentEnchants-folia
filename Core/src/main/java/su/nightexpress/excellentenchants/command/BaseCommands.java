@@ -102,7 +102,7 @@ public class BaseCommands {
         return level;
     }
 
-    public static boolean giveEnchantBook(@NotNull CommandContext context, @NotNull ParsedArguments arguments) {
+    public static boolean giveEnchantBook(@NotNull EnchantsPlugin plugin, @NotNull CommandContext context, @NotNull ParsedArguments arguments) {
         Player player = CommandUtil.getPlayerOrSender(context, arguments, CommandArguments.PLAYER);
         if (player == null) return false;
 
@@ -110,11 +110,11 @@ public class BaseCommands {
         Enchantment enchantment = arguments.getEnchantmentArgument(CommandArguments.ENCHANT);
         int level = getLevel(enchantment, arguments);
 
-        giveBook(context.getSender(), player, enchantment, level, charged);
+        giveBook(plugin, context.getSender(), player, enchantment, level, charged);
         return true;
     }
 
-    public static boolean giveRandomBook(@NotNull CommandContext context, @NotNull ParsedArguments arguments) {
+    public static boolean giveRandomBook(@NotNull EnchantsPlugin plugin, @NotNull CommandContext context, @NotNull ParsedArguments arguments) {
         Player player = CommandUtil.getPlayerOrSender(context, arguments, CommandArguments.PLAYER);
         if (player == null) return false;
 
@@ -123,11 +123,11 @@ public class BaseCommands {
         Enchantment enchantment = Rnd.get(custom ? EnchantRegistry.getRegisteredBukkit() : BukkitThing.getAll(RegistryType.ENCHANTMENT));
         int level = EnchantUtils.randomLevel(enchantment);
 
-        giveBook(context.getSender(), player, enchantment, level, charged);
+        giveBook(plugin, context.getSender(), player, enchantment, level, charged);
         return true;
     }
 
-    private static boolean giveBook(@NotNull CommandSender sender, @NotNull Player player, @NotNull Enchantment enchantment, int level, boolean charged) {
+    private static boolean giveBook(@NotNull EnchantsPlugin plugin, @NotNull CommandSender sender, @NotNull Player player, @NotNull Enchantment enchantment, int level, boolean charged) {
         ItemStack itemStack = new ItemStack(Material.ENCHANTED_BOOK);
         if (charged) {
             EnchantUtils.restoreCharges(itemStack, enchantment, level);
