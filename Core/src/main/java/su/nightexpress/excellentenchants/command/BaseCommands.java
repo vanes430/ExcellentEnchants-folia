@@ -134,7 +134,7 @@ public class BaseCommands {
         }
 
         EnchantUtils.add(itemStack, enchantment, level, true);
-        Players.addItem(player, itemStack);
+        plugin.runTaskAtPlayer(player, () -> Players.addItem(player, itemStack));
 
         Lang.ENCHANTED_BOOK_GAVE.getMessage().send(sender, replacer -> replacer
             .replace(EnchantsPlaceholders.GENERIC_ENCHANT, LangUtil.getSerializedName(enchantment))
@@ -218,7 +218,7 @@ public class BaseCommands {
         ItemStack fuel = enchantment.getFuel();
         fuel.setAmount(amount);
 
-        Players.addItem(player, fuel);
+        plugin.runTaskAtPlayer(player, () -> Players.addItem(player, fuel));
 
         Lang.CHARGES_FUEL_GAVE.getMessage().send(context.getSender(), replacer -> replacer
             .replace(EnchantsPlaceholders.GENERIC_AMOUNT, NumberUtil.format(amount))
