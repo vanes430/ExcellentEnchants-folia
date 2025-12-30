@@ -29,7 +29,9 @@ public class TickedBlock {
     public void restore() {
         if (!this.location.isWorldLoaded()) return;
 
-        this.location.getBlock().setType(this.originalType);
+        try {
+            this.location.getBlock().setType(this.originalType);
+        } catch (Exception ignored) {}
     }
 
     public void sendDamageInfo(float progress) {
