@@ -22,7 +22,6 @@ import su.nightexpress.excellentenchants.api.enchantment.CustomEnchantment;
 import su.nightexpress.excellentenchants.api.enchantment.component.EnchantComponent;
 import su.nightexpress.excellentenchants.api.enchantment.type.ProjectileEnchant;
 import su.nightexpress.excellentenchants.config.Config;
-import su.nightexpress.excellentenchants.manager.block.TickedBlock;
 import su.nightexpress.excellentenchants.manager.damage.Explosion;
 import su.nightexpress.excellentenchants.manager.listener.AnvilListener;
 import su.nightexpress.excellentenchants.manager.listener.EnchantListener;
@@ -44,7 +43,6 @@ import java.util.function.Function;
 public class EnchantManager extends AbstractManager<EnchantsPlugin> {
 
     private final Map<AbstractArrow, Set<UniParticle>> arrowEffects;
-    private final Map<Location, TickedBlock>           tickedBlocks;
     private final Map<UUID, Explosion>                 explosions;
 
     private EnchantsMenu enchantsMenu;
@@ -52,7 +50,6 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
     public EnchantManager(@NotNull EnchantsPlugin plugin) {
         super(plugin);
         this.arrowEffects = new ConcurrentHashMap<>();
-        this.tickedBlocks = new ConcurrentHashMap<>();
         this.explosions = new ConcurrentHashMap<>();
     }
 
@@ -70,18 +67,13 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
         if (!EnchantRegistry.PASSIVE.isEmpty()) {
             this.addTask(this::tickPassiveEnchants, Config.PASSIVE_ENCHANTS_TICK_INTERVAL.get());
         }
-
-        this.addTask(this::tickBlocks, 1L);
     }
 
     @Override
     protected void onShutdown() {
-        this.restoreBlocks();
-
         if (this.enchantsMenu != null) this.enchantsMenu.clear();
 
         this.arrowEffects.clear();
-        this.tickedBlocks.clear();
         this.explosions.clear();
     }
 
@@ -172,32 +164,6 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
         });
     }
 
-    private void tickBlocks() {
-        this.tickedBlocks.values().forEach(tickedBlock -> {
-            Location location = tickedBlock.getLocation();
-            World world = location.getWorld();
-            if (world == null) {
-                this.tickedBlocks.remove(location);
-                return;
-            }
-
-            if (!world.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
-                return;
-            }
-
-            this.plugin.runTaskAtLocation(location, () -> {
-                tickedBlock.tick();
-                if (tickedBlock.isDead()) {
-                    this.tickedBlocks.remove(location);
-                }
-            });
-        });
-    }
-
-    private void restoreBlocks() {
-        this.tickedBlocks.values().forEach(TickedBlock::restore);
-    }
-
     private void tickPassiveEnchants() {
         this.getPassiveEnchantEntities().forEach(entity -> {
             this.plugin.runTaskForEntity(entity, () -> {
@@ -219,26 +185,6 @@ public class EnchantManager extends AbstractManager<EnchantsPlugin> {
         entities.removeIf(Entity::isDead);
 
         return entities;
-    }
-
-    public void addTickedBlock(@NotNull Block block, @NotNull Material origin, @NotNull Material transform, int lifeTime) {
-        Location location = block.getLocation();
-        TickedBlock tickedBlock = new TickedBlock(location, origin, lifeTime);
-        this.tickedBlocks.put(location, tickedBlock);
-
-        block.setType(transform);
-    }
-
-    public boolean removeTickedBlock(@NotNull Block block) {
-        return this.removeTickedBlock(block.getLocation());
-    }
-
-    public boolean removeTickedBlock(@NotNull Location location) {
-        TickedBlock tickedBlock = this.tickedBlocks.remove(location);
-        if (tickedBlock == null) return false;
-
-        tickedBlock.restore();
-        return true;
     }
 
     public boolean createExplosion(@NotNull LivingEntity entity, @NotNull Location location, float power, boolean fire, boolean destroy, @NotNull Consumer<Explosion> consumer) {

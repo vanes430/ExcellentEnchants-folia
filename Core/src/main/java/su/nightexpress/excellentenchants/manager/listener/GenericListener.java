@@ -7,8 +7,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -76,23 +74,8 @@ public class GenericListener extends AbstractListener<EnchantsPlugin> {
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onTickedBlockBreak(BlockBreakEvent event) {
-        if (this.manager.removeTickedBlock(event.getBlock())) {
-            event.setDropItems(false);
-            event.setExpToDrop(0);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onTickedBlockTNTExplode(BlockExplodeEvent event) {
-        event.blockList().forEach(this.manager::removeTickedBlock);
-    }
-
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onTickedBlockEntityExplode(EntityExplodeEvent event) {
-        event.blockList().forEach(this.manager::removeTickedBlock);
-
         if (event.getEntity() instanceof LivingEntity entity) {
             this.manager.handleEnchantExplosion(event, entity);
         }
