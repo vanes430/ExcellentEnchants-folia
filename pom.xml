@@ -16,6 +16,7 @@
         <module>MC_1_21_5</module>
         <module>MC_1_21_7</module>
         <module>MC_1_21_8</module>
+        <module>MC_1_21_11</module>
     </modules>
 
     <properties>
@@ -32,6 +33,11 @@
     </distributionManagement>
 
     <repositories>
+        <repository>
+            <id>elmakers</id>
+            <url>https://maven.elmakers.com/repository</url>
+        </repository>
+
         <repository>
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>

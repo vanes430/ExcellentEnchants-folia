@@ -79,8 +79,8 @@ public class EnchantsBootstrap implements PluginBootstrap {
             PostFlatten.registrar = null;
         }));
 
-        // Register a new handler for the freeze lifecycle event on the enchantment registry
-        lifeCycle.registerEventHandler(RegistryEvents.ENCHANTMENT.freeze().newHandler(event -> {
+        // Register a new handler for the compose lifecycle event on the enchantment registry
+        lifeCycle.registerEventHandler(RegistryEvents.ENCHANTMENT.compose().newHandler(event -> {
             EnchantRegistry.getDataMap().forEach((enchantId, data) -> {
                 // Skip disabled enchantments.
                 if (DistributionConfig.isDisabled(enchantId)) {

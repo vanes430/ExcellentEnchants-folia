@@ -21,6 +21,7 @@ import su.nightexpress.excellentenchants.manager.EnchantProviders;
 import su.nightexpress.excellentenchants.nms.RegistryHack;
 import su.nightexpress.excellentenchants.nms.mc_1_21_7.RegistryHack_1_21_7;
 import su.nightexpress.excellentenchants.nms.mc_1_21_8.RegistryHack_1_21_8;
+import su.nightexpress.excellentenchants.nms.mc_1_21_11.RegistryHack_1_21_11;
 import su.nightexpress.excellentenchants.nms.v1_21_4.RegistryHack_1_21_4;
 import su.nightexpress.excellentenchants.nms.v1_21_5.RegistryHack_1_21_5;
 import su.nightexpress.nightcore.NightPlugin;
@@ -123,6 +124,7 @@ public class EnchantsPlugin extends NightPlugin implements ImprovedCommands {
             case MC_1_21_5 -> this.registryHack = new RegistryHack_1_21_5(this);
             case MC_1_21_7 -> this.registryHack = new RegistryHack_1_21_7(this);
             case MC_1_21_8 -> this.registryHack = new RegistryHack_1_21_8(this);
+            case MC_1_21_11 -> this.registryHack = new RegistryHack_1_21_11(this);
         }
     }
 
